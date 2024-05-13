@@ -17,16 +17,16 @@ class StEventType:
 class StEvent:
     def __init__(self, event_type: StEventType, t_start: date | datetime, t_end: date | datetime, summary: str,):
         self.event_type = event_type
-        self.t_start = t_start if event_type == StEventType.ALL_DAY else self._ensure_datetime(t_start)
-        self.t_end = t_end if event_type == StEventType.ALL_DAY else self._ensure_datetime(t_end)
+        self.t_start = t_start if event_type == StEventType.ALL_DAY else self._ensure_utc_datetime(t_start)
+        self.t_end = t_end if event_type == StEventType.ALL_DAY else self._ensure_utc_datetime(t_end)
         self.summary = str(summary)
 
-        self.index = self._ensure_datetime(self.t_start)
+        self.utc_index = (self._ensure_utc_datetime(self.t_start), self._ensure_utc_datetime(self.t_end))
         
 
     def __str__(self):
-        t_start_str = self.t_start if self.event_type == StEventType.ALL_DAY else self.t_start.strftime('%Y-%m-%d %H:%M')
-        t_end_str = self.t_end if self.event_type == StEventType.ALL_DAY else self.t_end.strftime('%Y-%m-%d %H:%M')
+        t_start_str = self.t_start if self.event_type == StEventType.ALL_DAY else self.t_start.astimezone(USER_UTC).strftime('%Y-%m-%d %H:%M')
+        t_end_str = self.t_end if self.event_type == StEventType.ALL_DAY else self.t_end.astimezone(USER_UTC).strftime('%Y-%m-%d %H:%M')
 
         return f"Event Type: {self.event_type}, Start: {t_start_str}, End: {t_end_str}, Summary: {self.summary}"
 
@@ -57,7 +57,7 @@ class StEvent:
     
         
     @staticmethod
-    def _ensure_datetime(dt):
+    def _ensure_utc_datetime(dt):
         """Make sure the dt is in type of datetime without tzinfo (utc0)"""        
         if isinstance(dt, datetime):
             if dt.tzinfo is not None:
